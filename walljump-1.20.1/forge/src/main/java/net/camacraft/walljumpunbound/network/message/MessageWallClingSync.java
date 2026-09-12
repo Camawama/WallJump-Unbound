@@ -11,18 +11,20 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 /** Another player's cling state, so their wall-cling pose can be drawn here. */
-public record MessageWallClingSync(int entityId, boolean clinging, Direction wall, float yaw, boolean ship) {
+public record MessageWallClingSync(int entityId, boolean clinging, Direction wall, float yaw, boolean ship,
+                                   boolean ledge) {
     public static void encode(MessageWallClingSync message, FriendlyByteBuf buffer) {
         buffer.writeVarInt(message.entityId);
         buffer.writeBoolean(message.clinging);
         MessageWallCling.writeWall(buffer, message.wall);
         buffer.writeFloat(message.yaw);
         buffer.writeBoolean(message.ship);
+        buffer.writeBoolean(message.ledge);
     }
 
     public static MessageWallClingSync decode(FriendlyByteBuf buffer) {
         return new MessageWallClingSync(buffer.readVarInt(), buffer.readBoolean(), MessageWallCling.readWall(buffer),
-                buffer.readFloat(), buffer.readBoolean());
+                buffer.readFloat(), buffer.readBoolean(), buffer.readBoolean());
     }
 
     public static void handle(MessageWallClingSync message, Supplier<NetworkEvent.Context> supplier) {
@@ -37,7 +39,7 @@ public record MessageWallClingSync(int entityId, boolean clinging, Direction wal
             if (minecraft.level == null) return;
             Entity entity = minecraft.level.getEntity(message.entityId);
             if (entity instanceof WallClingHolder holder) holder.walljumpunbound$setWallCling(message.clinging, message.wall, message.yaw, message.ship);
-            if (entity instanceof WallClingPosture posture) posture.walljumpunbound$setWallClingPosture(message.clinging);
+            if (entity instanceof WallClingPosture posture) posture.walljumpunbound$setWallClingPosture(message.clinging, message.ledge);
         }
     }
 }

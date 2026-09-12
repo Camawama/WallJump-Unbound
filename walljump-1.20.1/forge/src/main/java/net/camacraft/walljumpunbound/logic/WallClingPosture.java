@@ -10,5 +10,8 @@ public interface WallClingPosture {
 
     boolean walljumpunbound$isWallClingPosture();
 
-    void walljumpunbound$setWallClingPosture(boolean clinging);
+    /** Whether that hold is a ledge grab: both hands over the top of the wall. */
+    boolean walljumpunbound$isWallClingLedge();
+
+    void walljumpunbound$setWallClingPosture(boolean clinging, boolean ledge);
 }

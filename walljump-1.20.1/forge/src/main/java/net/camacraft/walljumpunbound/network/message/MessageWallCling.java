@@ -17,16 +17,18 @@ import java.util.function.Supplier;
  * relays the pose to everyone watching them, and tells the server a fall has
  * just been caught.
  */
-public record MessageWallCling(boolean clinging, Direction wall, float yaw, boolean ship) {
+public record MessageWallCling(boolean clinging, Direction wall, float yaw, boolean ship, boolean ledge) {
     public static void encode(MessageWallCling message, FriendlyByteBuf buffer) {
         buffer.writeBoolean(message.clinging);
         writeWall(buffer, message.wall);
         buffer.writeFloat(message.yaw);
         buffer.writeBoolean(message.ship);
+        buffer.writeBoolean(message.ledge);
     }
 
     public static MessageWallCling decode(FriendlyByteBuf buffer) {
-        return new MessageWallCling(buffer.readBoolean(), readWall(buffer), buffer.readFloat(), buffer.readBoolean());
+        return new MessageWallCling(buffer.readBoolean(), readWall(buffer), buffer.readFloat(),
+                buffer.readBoolean(), buffer.readBoolean());
     }
 
     static void writeWall(FriendlyByteBuf buffer, Direction wall) {
@@ -52,9 +54,10 @@ public record MessageWallCling(boolean clinging, Direction wall, float yaw, bool
             // record of the fall, read before the client's cling resets it.
             if (player instanceof WallClingPosture posture) {
                 if (message.clinging && !posture.walljumpunbound$isWallClingPosture()) ModDamageTypes.hurtForCatchingWall(player);
-                posture.walljumpunbound$setWallClingPosture(message.clinging);
+                posture.walljumpunbound$setWallClingPosture(message.clinging, message.ledge);
             }
-            PacketHandler.sendToTracking(player, new MessageWallClingSync(player.getId(), message.clinging, message.wall, yaw, message.ship));
+            PacketHandler.sendToTracking(player,
+                    new MessageWallClingSync(player.getId(), message.clinging, message.wall, yaw, message.ship, message.ledge));
         });
         supplier.get().setPacketHandled(true);
     }

@@ -41,6 +41,7 @@ public class MessageWallCling {
         var wall = readWall(buffer);
         var rawYaw = buffer.readFloat();
         var ship = buffer.readBoolean();
+        var ledge = buffer.readBoolean();
         server.execute(() -> {
             boolean wallJumpEnabled = ModConfig.wallJumpEnabled || (ModConfig.enableEnchantments && ModConfig.wallJumpEnchantment);
             if (!wallJumpEnabled) return;
@@ -52,7 +53,7 @@ public class MessageWallCling {
             // record of the fall, read before the client's cling resets it.
             if (player instanceof WallClingPosture posture) {
                 if (clinging && !posture.walljumpunbound$isWallClingPosture()) ModDamageTypes.hurtForCatchingWall(player);
-                posture.walljumpunbound$setWallClingPosture(clinging);
+                posture.walljumpunbound$setWallClingPosture(clinging, ledge);
             }
 
             FriendlyByteBuf out = new FriendlyByteBuf(Unpooled.buffer());
@@ -61,6 +62,7 @@ public class MessageWallCling {
             writeWall(out, wall);
             out.writeFloat(yaw);
             out.writeBoolean(ship);
+            out.writeBoolean(ledge);
 
             // One packet, sent to every tracker: a buffer cannot be handed to
             // ServerPlayNetworking.send more than once.

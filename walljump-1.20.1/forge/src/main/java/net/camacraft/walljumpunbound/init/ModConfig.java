@@ -39,6 +39,7 @@ public final class ModConfig {
     public static double wallJumpHeight;
     public static int maxWallJumps;
     public static double exhaustionWallJump;
+    public static double exhaustionLedgeGrab;
     public static boolean allowReClinging;
     public static boolean onFallWallCling;
     public static boolean autoRotation;
@@ -101,6 +102,7 @@ public final class ModConfig {
         wallJumpHeight = value(VALUES.wallJumpHeight, loaded);
         maxWallJumps = value(VALUES.maxWallJumps, loaded);
         exhaustionWallJump = value(VALUES.exhaustionWallJump, loaded);
+        exhaustionLedgeGrab = value(VALUES.exhaustionLedgeGrab, loaded);
         allowReClinging = value(VALUES.allowReClinging, loaded);
         onFallWallCling = value(VALUES.onFallWallCling, loaded);
         autoRotation = value(VALUES.autoRotation, loaded);
@@ -142,6 +144,7 @@ public final class ModConfig {
         final DoubleValue wallJumpHeight;
         final IntValue maxWallJumps;
         final DoubleValue exhaustionWallJump;
+        final DoubleValue exhaustionLedgeGrab;
         final BooleanValue allowReClinging;
         final BooleanValue onFallWallCling;
         final BooleanValue autoRotation;
@@ -191,6 +194,9 @@ public final class ModConfig {
                     .defineInRange("maxWallJumps", 72000, 0, Integer.MAX_VALUE);
             exhaustionWallJump = b.comment("[server] Hunger spent per wall jump, in exhaustion points. Sprinting costs about 0.1 per block.")
                     .defineInRange("exhaustionWallJump", 0.8, 0.0, 5.0);
+            exhaustionLedgeGrab = b.comment("[server] Hunger spent per second of hanging from a ledge, in exhaustion points.",
+                    "Sprinting costs about 0.6 a second. Run out of food and your grip gives out. 0 is off.")
+                    .defineInRange("exhaustionLedgeGrab", 1.0, 0.0, 20.0);
             allowReClinging = b.comment("[server] Cling again to the wall you just jumped off.",
                     "When off, you must first fall a block below your jump or reach a different wall.")
                     .define("allowReClinging", true);

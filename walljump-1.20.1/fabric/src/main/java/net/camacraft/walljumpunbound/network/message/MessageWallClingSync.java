@@ -22,11 +22,12 @@ public class MessageWallClingSync {
         Direction wall = MessageWallCling.readWall(buffer);
         var yaw = buffer.readFloat();
         var ship = buffer.readBoolean();
+        var ledge = buffer.readBoolean();
         client.execute(() -> {
             if (client.level == null) return;
             Entity entity = client.level.getEntity(entityId);
             if (entity instanceof WallClingHolder holder) holder.walljumpunbound$setWallCling(clinging, wall, yaw, ship);
-            if (entity instanceof WallClingPosture posture) posture.walljumpunbound$setWallClingPosture(clinging);
+            if (entity instanceof WallClingPosture posture) posture.walljumpunbound$setWallClingPosture(clinging, ledge);
         });
     }
 }

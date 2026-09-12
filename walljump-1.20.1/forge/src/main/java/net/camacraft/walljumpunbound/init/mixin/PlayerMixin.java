@@ -1,5 +1,6 @@
 package net.camacraft.walljumpunbound.init.mixin;
 
+import net.camacraft.walljumpunbound.init.ModConfig;
 import net.camacraft.walljumpunbound.init.ServerConfig;
 import net.camacraft.walljumpunbound.logic.WallClingPosture;
 import net.minecraft.sounds.SoundEvent;
@@ -20,6 +21,9 @@ public abstract class PlayerMixin implements WallClingPosture {
 
     @Unique
     private boolean walljumpunbound$clinging;
+
+    @Unique
+    private boolean walljumpunbound$clingingLedge;
 
     @Shadow
     public abstract void playSound(SoundEvent sound, float volume, float pitch);
@@ -51,8 +55,30 @@ public abstract class PlayerMixin implements WallClingPosture {
     }
 
     @Override
-    public void walljumpunbound$setWallClingPosture(boolean clinging) {
+    public boolean walljumpunbound$isWallClingLedge() {
+        return this.walljumpunbound$clingingLedge;
+    }
+
+    @Override
+    public void walljumpunbound$setWallClingPosture(boolean clinging, boolean ledge) {
         this.walljumpunbound$clinging = clinging;
+        this.walljumpunbound$clingingLedge = clinging && ledge;
+    }
+
+    /**
+     * Hanging by the hands is hard work. A ledge grab never slides and never
+     * times out, so the only thing that ends one the player did not choose is
+     * running out of food — which the cling release watches for. Spending
+     * hunger here is what makes that happen, and it is charged on the server's
+     * own clock so a client cannot talk the cost down.
+     */
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void walljumpunbound$exhaustLedgeGrab(CallbackInfo ci) {
+        Player self = (Player) (Object) this;
+        if (self.level().isClientSide || !this.walljumpunbound$clingingLedge) return;
+
+        float exhaustion = (float) (ModConfig.exhaustionLedgeGrab / 20.0);
+        if (exhaustion > 0.0F) self.causeFoodExhaustion(exhaustion);
     }
 
     @ModifyArg(method = "causeFallDamage", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;causeFallDamage(FFLnet/minecraft/world/damagesource/DamageSource;)Z"), index = 0)
